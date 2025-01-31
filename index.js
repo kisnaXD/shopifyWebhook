@@ -27,7 +27,7 @@ transporter.verify((error, success) => {
 const app = express();
 app.use(cors());
 const SHOPIFY_SECRET = process.env.SHOPIFY_SECRET;
-app.use(express.JSON())
+app.use(express.json())
 app.use('/webhook', express.raw({ type: 'application/json', verify: (req, res, buf) => {
     req.rawBody = buf.toString('utf8');
 }}));
@@ -86,11 +86,9 @@ function saveOrderDetails(namevar, phoneNovar, emailvar, accessCodevar, ticketva
 }
 
 app.post("/verify-access-code", (req, res) => {
-    const { accessCode } = req.query;
-    console.log("Received query")
+    const accessCode = req.body.accessCode;
 
     if (!accessCode) {
-        console.log("Error in  query")
         return res.status(400).json({ status: "error", message: "Access code is required" });
     }
 
@@ -102,12 +100,10 @@ app.post("/verify-access-code", (req, res) => {
         }
 
         try {
-            console.log("Replied to query")
             const orders = JSON.parse(data);
             const order = orders.find(order => order.accessCode === accessCode);
 
             if (order) {
-                console.log("Sent back nice to  query")
                 return res.status(200).json({
                     status: "success",
                     message: "Access code found",
@@ -117,7 +113,6 @@ app.post("/verify-access-code", (req, res) => {
                     tickets: order.tickets
                 });
             } else {
-                console.log("Error in sending back to query")
                 return res.status(404).json({ status: "error", message: "Invalid access code" });
             }
         } catch (parseError) {
@@ -128,11 +123,8 @@ app.post("/verify-access-code", (req, res) => {
 
 app.post("/add-entry", (req, res) => {
     const reqbody = req.body;
-    console.log(reqbody);
-    console.log("Received query")
 
     if (!reqbody.accessCode) {
-        console.log("Error in  query")
         return res.status(400).json({ status: "error", message: "Invalid Body" });
     }
 
@@ -140,16 +132,12 @@ app.post("/add-entry", (req, res) => {
     
     fs.readFile(filePath, "utf8", (err, data) => {
         let orders = []
-        console.log(data)
         if (err) {
             return res.status(500).json({ status: "error", message: "Server error reading database" });
         } else {
             try {
-                console.log("Replied to query")
                 orders = JSON.parse(data);
-                console.log(orders)
-                const newOrder = JSON.parse(reqbody);
-                console.log(newOrder);
+                const newOrder = reqbody;
                 orders.forEach((order) => {
                     if(newOrder.accessCode === order.accessCode) {
                         order.tickets[0].quantity -= newOrder.generalFemaleEntry;
@@ -174,9 +162,7 @@ app.post("/add-entry", (req, res) => {
     });
 });
 
-
 app.post('/webhook', (req, res) => {
-    console.log("Received webhook request");
     const shopifyHmac = req.headers['x-shopify-hmac-sha256'];
     const rawBody = req.rawBody;
     const generatedHmac = crypto
@@ -185,7 +171,6 @@ app.post('/webhook', (req, res) => {
       .digest('base64');
 
     if (generatedHmac === shopifyHmac) {
-        console.log('HMAC Verified!');
         const payload = JSON.parse(rawBody);
 
         if (payload.financial_status === 'paid') {

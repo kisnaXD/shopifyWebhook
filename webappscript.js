@@ -7,6 +7,57 @@ function updateValue(id, change, maxValue) {
     }
 }
 
+function refreshTable(accessCode) {
+    fetch(`https://vades.in/verify-access-code`, {
+        method: "POST",
+        headers: {
+            'Content-Type': "application/json",
+        },
+        body: JSON.stringify({
+            accessCode: accessCode
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                const accessCodePara = document.querySelector(".accessCodePara");
+                accessCodePara.innerText = `Welcome : ${data.name} \nAccess Code : ${accessCode}`
+                accessCodePara.setAttribute("data-access-code", accessCode);
+                accessCodePara.setAttribute("data-name", data.name);
+                
+                data.tickets.forEach(ticket => {
+                    const ticketName = ticket.name.toLowerCase().replace(/\s+/g, '-'); 
+                    const quantity = ticket.quantity;
+                    const availableElement = document.getElementById(ticketName + '-available');
+                    if (availableElement) {
+                        availableElement.innerText = quantity;
+                    }
+                    const valueElement = document.getElementById(ticketName + '-value');
+                    if (valueElement) {
+                        valueElement.innerText = Math.min(quantity, parseInt(valueElement.innerText));
+                    }
+                    const btnPlus = document.getElementById(ticketName + '-plus');
+                    const btnMinus = document.getElementById(ticketName + '-minus');
+                    if (btnPlus && btnMinus) {
+                        const maxValue = quantity;
+
+                        btnPlus.onclick = function() {
+                            updateValue(ticketName + '-value', 1, maxValue);
+                        };
+                        btnMinus.onclick = function() {
+                            updateValue(ticketName + '-value', -1, maxValue);
+                        };
+                    }
+                });
+            } else {
+                document.getElementById("modal").style.display = "flex";
+            }
+        })
+        .catch(error => {
+            document.getElementById("modal").style.display = "flex";
+        });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("accessCodeSubmit").addEventListener("click", function () {
         const accessCode = document.getElementById("accessCodeInput").value.trim();
@@ -15,55 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Please enter an access code.");
             return;
         }
-    
-        fetch(`https://vades.in/verify-access-code`, {
-            method: "POST",
-            headers: {
-                'Content-Type': "application/json",
-            },
-            body: JSON.stringify({
-                accessCode: accessCode
-            }),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "success") {
-                    const accessCodePara = document.querySelector(".accessCodePara");
-                    accessCodePara.innerText = `Welcome : ${data.name} \nAccess Code : ${accessCode}`
-                    accessCodePara.setAttribute("data-access-code", accessCode);
-                    accessCodePara.setAttribute("data-name", data.name);
-                    
-                    data.tickets.forEach(ticket => {
-                        const ticketName = ticket.name.toLowerCase().replace(/\s+/g, '-'); 
-                        const quantity = ticket.quantity;
-                        const availableElement = document.getElementById(ticketName + '-available');
-                        if (availableElement) {
-                            availableElement.innerText = quantity;
-                        }
-                        const valueElement = document.getElementById(ticketName + '-value');
-                        if (valueElement) {
-                            valueElement.innerText = Math.min(quantity, parseInt(valueElement.innerText));
-                        }
-                        const btnPlus = document.getElementById(ticketName + '-plus');
-                        const btnMinus = document.getElementById(ticketName + '-minus');
-                        if (btnPlus && btnMinus) {
-                            const maxValue = quantity;
-
-                            btnPlus.onclick = function() {
-                                updateValue(ticketName + '-value', 1, maxValue);
-                            };
-                            btnMinus.onclick = function() {
-                                updateValue(ticketName + '-value', -1, maxValue);
-                            };
-                        }
-                    });
-                } else {
-                    document.getElementById("modal").style.display = "flex"; // Show modal
-                }
-            })
-            .catch(error => {
-                document.getElementById("modal").style.display = "flex"; // Show modal
-            });
+        
+        refreshTable(accessCode);
+        
     });
     document.getElementById("availableSubmit").addEventListener("click", () => {
         const accessCodePara = document.querySelector(".accessCodePara");
@@ -98,13 +103,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.status === "success") {
                     const successText = document.getElementById("successText");
                     successText.innerHTML = `
-                        <p><strong>Confirmed By:</strong> ${personName}</p>
-                        <p><strong>Confirmed Entries:</strong></p>
-                        <ul>
+                        <p style="font-family: 'Montserrat', sans-serif;"><strong>Confirmed By:</strong> ${personName}</p>
+                        <br>
+                        <p style="font-family: 'Montserrat', sans-serif;"><strong>Confirmed Entries:</strong></p>
+                        <ul style="list-style-type: none; font-family: 'Montserrat', sans-serif;">
                             <li>General Male Entry: ${generalMaleValue}</li>
                             <li>General Female Entry: ${generalFemaleValue}</li>
                         </ul>
                     `;
+                    refreshTable(accessCode);
                     document.getElementById("successModal").style.display = "flex"; 
                 } else {
                     document.getElementById("modal").style.display = "flex";
@@ -124,6 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.getElementById("closeSuccessModal").addEventListener("click", () => {
         document.getElementById("successModal").style.display = "none";
+        
     });
     window.addEventListener("click", (event) => {
         const modal = document.getElementById("modal");
