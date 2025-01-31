@@ -219,14 +219,18 @@ app.post('/webhook', (req, res) => {
                         background: #fad0c4;
                         color: #700000;
                         text-align: center;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
                     }
                     .email-container {
                         max-width: 600px;
-                        margin: 20px auto;
                         padding: 20px;
                         border-radius: 15px;
                         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
                         background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+                        text-align: center;
                     }
                     h1 {
                         color: #990000;
@@ -234,19 +238,18 @@ app.post('/webhook', (req, res) => {
                     .access-code {
                         font-size: 24px;
                         font-weight: bold;
-                        color: #cc0000;
-                        background: #fff;
+                        color: #fff;
+                        background: #cc0000;
                         display: inline-block;
                         padding: 10px 20px;
                         border-radius: 10px;
                     }
                     .tickets-container {
                         background: #ffe6e6;
-                        padding: 10px;
+                        padding: 15px;
                         border-radius: 10px;
-                        display: inline-block;
-                        text-align: left;
                         margin-top: 10px;
+                        text-align: center;
                     }
                     .ticket {
                         font-size: 16px;
@@ -259,22 +262,22 @@ app.post('/webhook', (req, res) => {
                     /* Dark Mode Support */
                     @media (prefers-color-scheme: dark) {
                         body {
-                            background: #1a1a1a;
-                            color: #ff9a9e;
+                            background: #121212;
+                            color: #ffdddd;
                         }
                         .email-container {
-                            background: #2a2a2a;
+                            background: linear-gradient(135deg, #3a3a3a, #1a1a1a);
                             box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
                         }
                         h1 {
-                            color: #ff5757;
+                            color: #ff6666;
                         }
                         .access-code {
-                            color: #fff;
-                            background: #ff5757;
+                            color: #121212;
+                            background: #ff6666;
                         }
                         .tickets-container {
-                            background: #3a3a3a;
+                            background: #292929;
                         }
                     }
                 </style>
